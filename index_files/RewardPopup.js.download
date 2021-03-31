@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿// Reward Popup
 new Vue({
     el: "#reward_pop",
@@ -118,4 +119,126 @@ new Vue({
         }
         this.checkJackpotPeriod();
     }
+=======
+﻿// Reward Popup
+new Vue({
+    el: "#reward_pop",
+    mixins: [mixin],
+    data: {
+        currId: "",
+        period: "",
+        nextDrawDate: "",
+        totalBonus: 0,
+        award: [{}, {}, {}],
+        winnerList: []
+    },
+    methods: {
+        checkJackpotPeriod: function () {
+            var self = this;
+            ApiPost("/api/Reward/CheckLatestPeriod", {}, function (response) {
+                period = response.data.Data.Period;
+                if (period) {
+                    if (period != "" && (isNullOrWhitespace($.cookie("JackpotPeriod")) || period != $.cookie("JackpotPeriod") || $.cookie("isShowRewardPop") == "false")) {
+                        self.getRewardAward();
+                    }
+                }
+            })
+        },
+        getRewardAward: function () {
+            var self = this;
+            ApiPost("/api/Reward/GetRewardPopUpInfo", {}, function (response) {
+                if (response.data != null) {
+                    response = response.data.Data;
+                    self.period = response.Period;
+                    self.currId = response.CurrId;
+                    self.totalBonus = response.TotalBonus;
+                    self.award[0].award = response.FirstAward;
+                    self.award[1].award = response.SecondAward;
+                    self.award[2].award = response.ThirdAward;
+                    JSON.parse(response.Winners).forEach(function (item) {
+                        switch (item.JackpotAwards) {
+                            case 1:
+                                self.award[0].groupId = self.convertGroupId(item.GroupId);
+                                self.award[0].winner = item.Winner;
+                                self.award[0].currId = self.convertCurrId(item.CurrId)
+                                break;
+                            case 2:
+                                self.award[1].groupId = self.convertGroupId(item.GroupId);
+                                self.award[1].winner = item.Winner;
+                                self.award[1].currId = self.convertCurrId(item.CurrId)
+                                break;
+                            case 3:
+                                self.award[2].groupId = self.convertGroupId(item.GroupId);
+                                self.award[2].winner = item.Winner;
+                                self.award[2].currId = self.convertCurrId(item.CurrId)
+                                break;
+                            default:
+                                self.winnerList.push({
+                                    groupId: self.convertGroupId(item.GroupId),
+                                    winner: item.Winner
+                                })
+                                break;
+                        }
+                    });
+                    self.nextDrawDate = response.NextDrawDate;
+                    self.popRewardPop();
+                    $.cookie("isShowRewardPop", "true", { expires: 365, path: '/' });
+                    $.cookie("JackpotPeriod", self.period, { expires: 365, path: '/' });
+                }
+            })
+        },
+        popRewardPop: function () {
+            $('#reward_pop').fadeIn();
+            $('#dialog-mask').show();
+        },
+        closeRewardPop: function () {
+            $('#reward_pop').fadeOut();
+            $('#dialog-mask').hide();
+        },
+        convertGroupId: function (groupId) {
+            switch (groupId.toUpperCase()) {
+                case "BRONZE":
+                    return "level_B";
+                case "DIAMOND":
+                    return "level_D";
+                case "GOLD":
+                    return "level_G";
+                case "PLATINUM":
+                    return "level_P";
+                case "SILVER":
+                    return "level_S";
+                case "-":
+                    return "avatar";
+                default:
+                    return "avatar";
+            };
+        },
+        convertCurrId: function (currId) {
+            switch (currId.toUpperCase()) {
+                case "USD":
+                    return "en";
+                case "IDR":
+                    return "indo";
+                case "THB":
+                    return "thai";
+                case "VND":
+                    return "vn";
+                case "MYR":
+                    return "malay";
+                case "CNY":
+                    return "cn";
+                case "KRW":
+                    return "korea";
+                default:
+                    return "";
+            };
+        }
+    },
+    created: function () {
+        if (isNullOrWhitespace($.cookie("isShowRewardPop"))) {
+            $.cookie("isShowRewardPop", "false", { expires: 365, path: '/' });
+        }
+        this.checkJackpotPeriod();
+    }
+>>>>>>> 5d22fc0 ("first init")
 })

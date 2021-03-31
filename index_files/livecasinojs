@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //Product Casino
 new Vue({
     el: "#LiveCasino",
@@ -197,3 +198,204 @@ new Vue({
 
     }
 });
+=======
+//Product Casino
+new Vue({
+    el: "#LiveCasino",
+    mixins: [mixin, productPageMixin],
+    data: {
+        productList: [],
+        ProductInfo: [
+            {
+                "providerId": "MGC",
+                "gameUrl": "/Live-Casino/LiveCasinoMgc"
+            },
+            {
+                "providerId": "OG",
+                "gameUrl": "/Live-Casino/LiveCasinoOg"
+            },
+            {
+                "providerId": "DGC",
+                "gameUrl": "/Live-Casino/LiveCasinoDg"
+            },
+            {
+                "providerId": "BGC",
+                "gameUrl": "/Live-Casino/LiveCasinoBg"
+            },
+            {
+                "providerId": "GPC",
+                "gameUrl": "/Live-Casino/LiveCasinoGp"
+            },
+            {
+                "providerId": "OPUSCASINO",
+                "gameUrl": "/Live-Casino/LiveCasinoOpus"
+            },
+            {
+                "providerId": "GD",
+                "gameUrl": "/Live-Casino/LiveCasinoGd"
+            },
+            {
+                "providerId": "ALLBET",
+                "gameUrl": "/Live-Casino/LiveCasinoAllBet"
+            },
+            {
+                "providerId": "AG",
+                "gameUrl": "/Live-Casino/LiveCasinoAg"
+            },
+            {
+                "providerId": "AGC",
+                "gameUrl": "/Live-Casino/LiveCasinoAgc"
+            },
+            {
+                "providerId": "ROYAL",
+                "gameUrl": "/Live-Casino/LiveCasinoRoyal"
+            },
+            {
+                "providerId": "RYC",
+                "currency": "idID enUS zhCN viVN enMY",
+                "gameUrl": "/Live-Casino/LiveCasinoRyc"
+            },
+            {
+                "providerId": "PT",
+                "gameUrl": "/Live-Casino/LiveCasinoPt"
+            },
+            {
+                "providerId": "EBET",
+                "gameUrl": "/Live-Casino/LiveCasinoEbet"
+            },
+            {
+                "providerId": "EBC",
+                "gameUrl": "/Live-Casino/LiveCasinoEbc"
+            },
+            {
+                "providerId": "TGP",
+                "gameUrl": "/Live-Casino/LiveCasinoTgp"
+            },
+            {
+                "providerId": "SXC",
+                "gameUrl": "/Live-Casino/LiveCasinoSexy"
+            },
+            {
+                "providerId": "OGC",
+                "gameUrl": "/Live-Casino/LiveCasinoOgc"
+            },
+            {
+                "providerId": "SAC",
+                "gameUrl": "/Live-Casino/LiveCasinoSac"
+            },
+            {
+                "providerId": "EGC",
+                "gameUrl": "/Live-Casino/LiveCasinoEgc"
+            }
+            ,
+            {
+                "providerId": "WMC",
+                "gameUrl": "/Live-Casino/LiveCasinoWmc"
+            }
+        ]
+    },
+    created: function () {
+        if (typeof (productModule) != "undefined") {
+            this.productList = productModule;
+            this.assignProduct();
+            $('#LiveCasino').show();
+        }
+    }
+})
+//LiveCasino Game List Js
+new Vue({
+    el: "#GamePanel",
+    mixins: [mixin],
+    data: {
+        gameList: {},
+        culture: "",
+        pathName: "",
+        currid: ""
+    },
+    methods: {
+        GetGameList: function () {
+            var self = this;
+            //post呼叫ApiController取得資料 (postURL,postData)
+            axios.post('/api/Cms/GetGameList', { Provider: "LiveCasino", ProviderId: self.providerId })
+                .then(function (response) {
+                    var gameList = response.data.Data.Game;
+
+                    if (_.isEmpty(gameList) || _.isNull(gameList)) {
+                        return;
+                    }
+                    var thisGame = _.filter(gameList,
+                        function (o) {
+                            return o.ProviderId === self.providerId;
+                        });
+
+                    self.gameList = thisGame;
+                    $('#GamePanel .preload').fadeOut();
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        },
+        getCurrid: function () {
+            var currid = $('#memberCurrId').text();
+            if (_.isEmpty(currid) || _.isNull(currid)) {
+                return;
+            }
+            this.currid = currid;
+        }
+
+    },
+    created: function () {
+        var self = this;
+        self.pageUrl();
+        self.GetGameList();
+        self.getCurrid();
+    },
+    watch: {
+    },
+    computed: {
+        providerId: function () {
+            var providerId = this.pathName.split("-");
+            return providerId[1];
+        },
+        supportGames: function () {
+            var self = this;
+            var gameList = self.gameList;
+            var currid = self.currid;
+            var lang = self.culture.toUpperCase();
+            var gameLang;
+            //過濾支援的語系檔
+            var games = _.filter(gameList, function (o) {
+                var suppLang = _.uniq(_.map(o.Language, 'Language'));
+                if (_.includes(suppLang, lang)) {
+                    gameLang = lang;
+                } else {
+                    gameLang = 'EN-US';
+                }
+                var nowLang = _.filter(o.Language, function (obj) {
+                    return obj.Language === gameLang;
+                });
+                o.Language = nowLang;
+                return this;
+            });
+
+            if (_.isEmpty(currid) || _.isNull(currid)) {
+                //尚未登入
+                return games;
+            } else {
+                //登入後回傳支援的幣別
+                games = _.filter(games, function (o) {
+                    if (_.includes(o.SupportCurrency, self.currid)) {
+                        return this;
+                    }
+                });
+                return games;
+            }
+        }
+    },
+    updated: function () {
+    },
+    mounted: function () {
+
+    }
+});
+>>>>>>> 5d22fc0 ("first init")
